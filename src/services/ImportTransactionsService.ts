@@ -1,7 +1,5 @@
 import { getRepository } from 'typeorm';
-import fs from 'fs';
 import path from 'path';
-import util from 'util';
 import csvtojson from 'csvtojson';
 import Transaction from '../models/Transaction';
 import Category from '../models/Category';
@@ -10,8 +8,6 @@ class ImportTransactionsService {
   async execute(fileName: string): Promise<Transaction[]> {
     const transactionsRepository = getRepository(Transaction);
     const categoriesRepository = getRepository(Category);
-
-    // const readfile = util.promisify(fs.readFile);
 
     const appDir = path.resolve(__dirname, '..', '..', 'tmp');
 

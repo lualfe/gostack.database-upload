@@ -1,4 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToOne,
+  JoinColumn,
+  AfterLoad,
+} from 'typeorm';
+import Category from './Category';
 
 @Entity('transactions')
 class Transaction {
@@ -17,11 +25,20 @@ class Transaction {
   @Column('uuid')
   category_id: string;
 
+  @OneToOne(() => Category)
+  @JoinColumn({ name: 'category_id' })
+  category: string;
+
   @Column('timestamp')
   created_at: Date;
 
   @Column('timestamp')
   updated_at: Date;
+
+  @AfterLoad()
+  public valueAsNumber(): void {
+    this.value = parseFloat(this.value as any);
+  }
 }
 
 export default Transaction;

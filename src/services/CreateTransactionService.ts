@@ -1,7 +1,8 @@
-// import AppError from '../errors/AppError';
-import { getRepository } from 'typeorm';
+import { getCustomRepository, getRepository } from 'typeorm';
+import TransactionsRepository from '../repositories/TransactionsRepository';
 import Transaction from '../models/Transaction';
 import Category from '../models/Category';
+import AppError from '../errors/AppError';
 
 interface Request {
   title: string;
@@ -23,10 +24,17 @@ class CreateTransactionService {
       (type !== 'income' && type !== 'outcome') ||
       category === ''
     ) {
-      // TODO
+      throw new AppError('title, value, type and category are all required');
     }
-    const transactionsRepository = getRepository(Transaction);
+    const transactionsRepository = getCustomRepository(TransactionsRepository);
     const categoriesRepository = getRepository(Category);
+
+    const allTransactions = await transactionsRepository.find();
+    const { total } = await transactionsRepository.getBalance(allTransactions);
+
+    if (type === 'outcome' && total - value < 0) {
+      throw new AppError('account balance cannot go below zero');
+    }
 
     let fullCategory = await categoriesRepository.findOne({
       where: { title: category },
@@ -38,6 +46,7 @@ class CreateTransactionService {
     const transaction = transactionsRepository.create({
       title,
       value,
+      type,
       category_id: fullCategory.id,
     });
 
